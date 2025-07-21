@@ -1,0 +1,75 @@
+# dot files
+/.vscode/launch.json
+/.settings
+/.cmsis
+/.eide/log
+/.eide.usr.ctx.json
+/.eide
+/.vscode
+/.mxproject
+.clang-format
+dscar.code-workspace
+dscar.ioc
+# project out
+/build
+/bin
+/obj
+/out
+/MDK-ARM/dscar/*
+
+# eide template
+*.ept
+*.eide-template
+
+# IDE files
+/.idea/
+*.iml
+*.iws
+*.ipr
+.vs/
+*.swp
+*.swo
+
+# Compiled files
+*.o
+*.d
+*.dep
+*.htm
+*.inp
+*.sct
+
+
+*.obj
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.axf
+
+# Debug files
+*.dSYM/
+*.su
+*.pdb
+*.i*86
+*.x86_64
+*.hex
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*~
+*.bak
+*.backup
