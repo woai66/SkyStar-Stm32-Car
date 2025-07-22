@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "motor.h"
 #include "oled.h"
+#include "encoder.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,20 +92,22 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_I2C2_Init();
+  MX_TIM4_Init();
+  MX_TIM8_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  
+  HAL_TIM_Base_Start_IT(&htim2);  // 启动定时器2，用于定时更新编码器数据
+  Encoder_Init();  // 初始化编码器 (启动编码器模式的定时器)
   // 初始化电机
   Motor_Init();
-  
+
   // 初始化OLED
   OLED_Init();
   OLED_Clear();
-  
-  // OLED测试
   OLED_ShowString(0, 0, "OLED Test", 16);
   OLED_ShowString(0, 2, "Init OK!", 16);
   HAL_Delay(1000);
-  
+  OLED_Clear(); // 清屏
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,9 +117,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    // OLED测试循环
-    OLED_Test();
-    HAL_Delay(2000);
+
+    Motor_A_Control(500);
+    
+    // OLED_Clear();  // 每次循环都全部清屏，最彻底但效率较低
+    
+    OLED_ShowString(0, 0, "Motor A:", 16);
+    int speed = Encoder_A_GetSpeed();
+      
+    // 使用新的显示数字函数
+    OLED_ShowNum(0,4,speed,16);
   }
   /* USER CODE END 3 */
 }
@@ -168,7 +178,14 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM2)  // 检查是否是定时器2的中断
+  {
+    Encoder_Update();  // 更新编码器数据
+    // 可以在这里添加其他定时任务
+  }
+}
 /* USER CODE END 4 */
 
 /**
@@ -202,3 +219,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+
