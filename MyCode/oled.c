@@ -2,7 +2,8 @@
 #include "stdlib.h"
 #include "math.h"
 #include "oledfont.h"  // 如果有字体文件，需要另外创建
-
+#include "stdio.h"
+#include "string.h"
 // OLED的I2C地址
 #define OLED_ADDR    0x78  // OLED的I2C地址（0x78对应0x3C，左移1位）
 #define OLED_CMD     0x00  // 写命令
@@ -100,6 +101,31 @@ void OLED_Clear(void)
   }
 }
 
+// 清除特定区域的显示内容
+void OLED_ClearArea(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+{
+  uint8_t i, n;
+  
+  // 确保坐标在有效范围内
+  if (x1 >= OLED_WIDTH) x1 = OLED_WIDTH-1;
+  if (x2 >= OLED_WIDTH) x2 = OLED_WIDTH-1;
+  if (y1 >= 8) y1 = 7;
+  if (y2 >= 8) y2 = 7;
+  
+  // 确保x2 >= x1，y2 >= y1
+  if(x1 > x2) { uint8_t temp = x1; x1 = x2; x2 = temp; }
+  if(y1 > y2) { uint8_t temp = y1; y1 = y2; y2 = temp; }
+  
+  for(i = y1; i <= y2; i++)
+  {
+    OLED_SetPos(x1, i);  // 设置起始位置
+    for(n = x1; n <= x2; n++)
+    {
+      OLED_Write_Byte(0x00, OLED_DATA);  // 写入空白数据
+    }
+  }
+}
+
 // 设置光标位置
 void OLED_SetPos(uint8_t x, uint8_t y)
 {
@@ -141,36 +167,77 @@ void OLED_ShowChar(uint8_t x, uint8_t y, uint8_t chr, uint8_t size)
   }
 }
 
-// 显示字符串
+// 显示字符串函数
 void OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size)
 {
   uint8_t j = 0;
+  uint8_t start_x = x; // 记录起始X坐标
+  uint8_t char_width = (size == 16) ? 8 : 6;
+  uint8_t line_height = (size == 16) ? 2 : 1;
+  
+  // 显示字符串
   while (str[j] != '\0')
-  {		
+  {    
     OLED_ShowChar(x, y, str[j], size);
-    x += size/2;
-    if(x > OLED_WIDTH - size/2)
+    x += char_width;
+    if(x > OLED_WIDTH - char_width)
     {
       x = 0;
-      y += 2;
+      y += line_height;
+      if(y >= OLED_HEIGHT/8) return; // 超出屏幕高度范围
     }
     j++;
   }
+  
+  // 在当前行的字符串后面填充空白字符，直到行末
+  while(x < OLED_WIDTH)
+  {
+    OLED_ShowChar(x, y, ' ', size);
+    x += char_width;
+  }
 }
 
+// 增加显示数字函数（其实是将整数转换为字符串后调用OLED_ShowString）
+void OLED_ShowNum(uint8_t x, uint8_t y, int num, uint8_t size)
+{
+  char buffer[16];
+  sprintf(buffer, "%d", num);  // 将整数转换为字符串
+  
+  OLED_ShowString(x, y, buffer, size);
+}
 
-// oled测试代码
+// 清除指定行
+void OLED_ClearLine(uint8_t line)
+{
+  if(line >= 8) return; // 超出范围
+  
+  OLED_SetPos(0, line);
+  for(uint8_t i = 0; i < OLED_WIDTH; i++)
+  {
+    OLED_Write_Byte(0x00, OLED_DATA);
+  }
+}
+
 void OLED_Test(void)
 {
   OLED_Clear();
+  OLED_Refresh(); // 刷新显示
+  
   OLED_ShowString(0, 0, "Debug OLED Test", 16);
   OLED_ShowString(0, 2, "Hello World!", 16);
   OLED_ShowString(0, 4, "Motor Speed:", 16);
   HAL_Delay(2000);
   
+  // 使用空白字符填充更新文本
+  OLED_ShowString(0, 2, "Updated Text!", 16);
+  HAL_Delay(1000);
+  
   OLED_Clear();
+  OLED_Refresh(); // 刷新显示
+  
   OLED_ShowString(0, 0, "DSCAR", 16);
-  OLED_ShowString(0, 2, "Motor A: 500", 16);
-  OLED_ShowString(0, 4, "Motor B: 500", 16);
+  OLED_ShowString(0, 2, "Motor A: ", 16);
+  OLED_ShowString(0, 4, "Motor B: ", 16);
   OLED_ShowString(0, 6, "Test Mode", 16);
+
 }
