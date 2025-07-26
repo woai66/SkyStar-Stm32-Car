@@ -2,6 +2,7 @@
 #define __OLED_H
 
 #include "stm32f4xx_hal.h"
+#include "bno08x.h"  // 添加BNO08x头文件引用
 
 // OLED参数定义
 #define OLED_WIDTH   128

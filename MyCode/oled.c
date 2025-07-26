@@ -218,10 +218,12 @@ void OLED_ClearLine(uint8_t line)
   }
 }
 
+// 显示BNO08x陀螺仪数据
+
+
 void OLED_Test(void)
 {
   OLED_Clear();
-  OLED_Refresh(); // 刷新显示
   
   OLED_ShowString(0, 0, "Debug OLED Test", 16);
   OLED_ShowString(0, 2, "Hello World!", 16);
@@ -233,8 +235,7 @@ void OLED_Test(void)
   HAL_Delay(1000);
   
   OLED_Clear();
-  OLED_Refresh(); // 刷新显示
-  
+    
   OLED_ShowString(0, 0, "DSCAR", 16);
   OLED_ShowString(0, 2, "Motor A: ", 16);
   OLED_ShowString(0, 4, "Motor B: ", 16);
